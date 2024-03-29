@@ -67,27 +67,18 @@ class Trie:
         for key, values in curr_node.children.items():
             values.print_subtree()
 
-    def to_JSON(self):
+    def to_JSON(self, fijs):
         curr_node = self.root
-        with open("dictionary.json", "w") as f:
+        with open(fijs, "w") as f:
             json.dump(self, f, default=lambda o: o.__dict__, 
             sort_keys=False, indent=4)
         return
-    
-        # s = ""
-        # curr_node = self.root
-        # for key, values in curr_node.children.items():
-        #     s += values.to_JSON() 
-        # return s
 
-    def load_JSON(self):
+    def load_JSON(self, fijs):
         curr_node = self.root
-        with open("dictionary.json") as f:
+        with open(fijs) as f:
             node_data = json.load(f)
-            # print(node_data["root"])
             cock = node_data["root"]["children"]
-            # print(cock)
-            # i, j = node_data.items()
             self.bfs(curr_node, cock)
 
     def bfs(self, cur_node, nodedic):
@@ -98,30 +89,40 @@ class Trie:
             cur_node.children[j["letter"]] = newNode
             self.bfs(newNode, j["children"])
 
-
+    # only takes words of length 4 > and writes it into a new file
+    def convert_dict(self, fulldic, newdic):
+        words_list = []
+        with open(fulldic) as f:
+            for word in f:
+                if len(word) > 4:
+                    words_list.append(word)
+        with open(newdic, "w") as f:
+            for word in words_list:
+                f.write(word)
     
-    def save_dictionary(self):
-        self.to_JSON()
-        print("to dictionary!!")
-        return
-    
+    # takes in file, creates a tree
+    def parse_dict_to_Tree(self, fidic, fijs):
+        with open(fidic) as f:
+            for word in f:
+                word = word.strip()
+                self.add_word(word)
+        self.to_JSON(fijs)
 
 
 
-words_list = ["tree", "trie", "tried", "trope", "trouble", "alive", "alone", "love", "afraid", "lonely", "memory", "membrane"]
+
 
 d_trie = Trie()
-for word in words_list:
-    d_trie.add_word(word)
-
-d_trie.print_trie()
+d_trie.parse_dict_to_Tree("new_dictionary.txt", "dictionary.json")
 
 
-new_tree = Trie()
-new_tree.load_JSON()
-print("\n")
-new_tree.print_trie()
-print("\n")
+
+
+# new_tree = Trie()
+# new_tree.load_JSON()
+# print("\n")
+# new_tree.print_trie()
+# print("\n")
 
 
 # s = d_trie.to_JSON()
