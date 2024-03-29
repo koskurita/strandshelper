@@ -28,19 +28,17 @@ import json
 class TrieNode:
     def __init__(self, letter):
         self.letter = letter
-        self.children = {}
         self.is_end_of_word = False
+        self.children = {}
     
     def print_subtree(self):
-        print(self.letter)
+        print(self.letter, end="")
         if self.is_end_of_word:
-            print("*")
+            print("*", end="")
         for key, values in self.children.items():
             values.print_subtree()
     
-    def to_JSON(self):
-        return json.dumps(self, default=lambda o: o.__dict__, 
-            sort_keys=True, indent=4)
+    # def load_JSON(self):
 
         
 
@@ -70,17 +68,43 @@ class Trie:
             values.print_subtree()
 
     def to_JSON(self):
-        s = ""
         curr_node = self.root
-        for key, values in curr_node.children.items():
-            s += values.to_JSON() 
-        return s
+        with open("dictionary.json", "w") as f:
+            json.dump(self, f, default=lambda o: o.__dict__, 
+            sort_keys=False, indent=4)
+        return
+    
+        # s = ""
+        # curr_node = self.root
+        # for key, values in curr_node.children.items():
+        #     s += values.to_JSON() 
+        # return s
+
+    def load_JSON(self):
+        curr_node = self.root
+        with open("dictionary.json") as f:
+            node_data = json.load(f)
+            # print(node_data["root"])
+            cock = node_data["root"]["children"]
+            # print(cock)
+            # i, j = node_data.items()
+            self.bfs(curr_node, cock)
+
+    def bfs(self, cur_node, nodedic):
+        for i, j in nodedic.items():
+            pp = j["letter"]
+            newNode = TrieNode(j["letter"])
+            newNode.is_end_of_word = j["is_end_of_word"]
+            cur_node.children[j["letter"]] = newNode
+            self.bfs(newNode, j["children"])
+
+
     
     def save_dictionary(self):
-        s = self.to_JSON()
-        filename = input("dictionary.txt")
-        with open(filename, "w") as f:
-        f.write(input())
+        self.to_JSON()
+        print("to dictionary!!")
+        return
+    
 
 
 
@@ -90,7 +114,18 @@ d_trie = Trie()
 for word in words_list:
     d_trie.add_word(word)
 
-s = d_trie.to_JSON()
+d_trie.print_trie()
+
+
+new_tree = Trie()
+new_tree.load_JSON()
+print("\n")
+new_tree.print_trie()
+print("\n")
+
+
+# s = d_trie.to_JSON()
+
 
 
 
