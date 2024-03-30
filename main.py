@@ -134,7 +134,7 @@ class StrandsMatrix:
         soup = BeautifulSoup(source, 'lxml')
         letters = soup.find_all('button', class_= "pRjvKq_item")
         for letter in letters:
-            letter_list.append(letter.get_text())
+            letter_list.append(letter.get_text().lower())
         self.createMatrix(letter_list)
         return 
 
@@ -147,21 +147,22 @@ class StrandsMatrix:
         return 
 
     def solveMatrix(self, x, y, trie, word, possible_words):
-        if self.charMatrix[x][y] not in trie.children:
+        if self.charMatrix[y][x] not in trie.children:
             return
-        word.append(self.charMatrix[x][y])
-        next_trie = trie.children[self.charMatrix[x][y]]
-        self.visited[x][y] = True
+        word.append(self.charMatrix[y][x])
+        next_trie = trie.children[self.charMatrix[y][x]]
+        self.visitedMatrix[y][x] = True
         if next_trie.is_end_of_word:
-            possible_words.append(word)
+            possible_words.append(''.join(word))
         dx = [-1, -1, -1, 0, 0, 1, 1, 1]
         dy = [-1, 0, 1, -1, 1, -1, 0, 1]
         for i in range(len(dx)):
             next_x = x + dx[i]
             next_y = y + dy[i]
-            if self.check_boundaries(next_x, next_y) and not self.visitedMatrix[next_x][next_y]:
-                self.solveMatrix(next_x, next_y, next_trie, word, possible_words)
-        self.visited[x][y] = False
+            if self.check_boundaries(next_x, next_y):
+                if not self.visitedMatrix[next_y][next_x]:
+                    self.solveMatrix(next_x, next_y, next_trie, word, possible_words)
+        self.visitedMatrix[y][x] = False
         del word[-1]
 
     def check_boundaries(self, x, y):
@@ -171,8 +172,21 @@ class StrandsMatrix:
 
 
 d_trie = Trie()
+d_trie.parse_dict_to_Tree("new_dictionary.txt", "dictionary.json")
+# d_trie.load_JSON("dictionary.json")
+# # d_trie.to_JSON("newj.json")
+
 
 m = StrandsMatrix()
 m.scrape()
-print(m.charMatrix)
-print(m.visitedMatrix)
+
+s = []
+li = []
+for i in range(8):
+    for j in range(6):
+        m.solveMatrix(j, i, d_trie.root, s, li)
+
+with open("res.txt", "w") as f:
+    for word in li:
+        f.write(word + "\n")
+
