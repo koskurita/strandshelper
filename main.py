@@ -208,9 +208,8 @@ for i in range(len(words)):
         wordset.add(tuple(tup))
     wordsetdic.append([words[i], wordset])
 
-
 def solve(wordsetdic, totalset, start, potentialsolve, solved):
-    if len(totalset) == 40:
+    if len(totalset) == 48:
         solved.append(potentialsolve.copy())
         return
     for i in range(start, len(wordsetdic)):
