@@ -146,14 +146,17 @@ class StrandsMatrix:
                 cnt += 1
         return 
 
-    def solveMatrix(self, x, y, trie, word, possible_words):
+    def solveMatrix(self, x, y, trie, word, possible_words, path, completepath):
         if self.charMatrix[y][x] not in trie.children:
             return
         word.append(self.charMatrix[y][x])
+        path.append([x,y])
         next_trie = trie.children[self.charMatrix[y][x]]
         self.visitedMatrix[y][x] = True
         if next_trie.is_end_of_word:
             possible_words.append(''.join(word))
+            completepath.append(path.copy())
+            # print(completepath)
         dx = [-1, -1, -1, 0, 0, 1, 1, 1]
         dy = [-1, 0, 1, -1, 1, -1, 0, 1]
         for i in range(len(dx)):
@@ -161,9 +164,10 @@ class StrandsMatrix:
             next_y = y + dy[i]
             if self.check_boundaries(next_x, next_y):
                 if not self.visitedMatrix[next_y][next_x]:
-                    self.solveMatrix(next_x, next_y, next_trie, word, possible_words)
+                    self.solveMatrix(next_x, next_y, next_trie, word, possible_words, path, completepath)
         self.visitedMatrix[y][x] = False
         del word[-1]
+        del path[-1]
 
     def check_boundaries(self, x, y):
         return x >= 0 and x < self._rowSize and y >= 0 and y < self._columnSize
@@ -181,12 +185,49 @@ m = StrandsMatrix()
 m.scrape()
 
 s = []
-li = []
+words = []
+path = []
+completepath = []
 for i in range(8):
     for j in range(6):
-        m.solveMatrix(j, i, d_trie.root, s, li)
+        m.solveMatrix(j, i, d_trie.root, s, words, path, completepath)
 
-with open("res.txt", "w") as f:
-    for word in li:
-        f.write(word + "\n")
+# print(completepath)
+
+# with open("res.txt", "w") as f:
+#     for i in range(len(words)):
+#         s = ''.join('[{},{}]'.format(x[0],x[1]) for x in completepath[i])
+#         f.write(words[i] + s + "\n")
+
+
+
+wordsetdic = []
+for i in range(len(words)):
+    wordset = set()
+    for tup in completepath[i]:
+        wordset.add(tuple(tup))
+    wordsetdic.append([words[i], wordset])
+
+
+def solve(wordsetdic, totalset, start, potentialsolve, solved):
+    if len(totalset) == 40:
+        solved.append(potentialsolve.copy())
+        return
+    for i in range(start, len(wordsetdic)):
+        if totalset.isdisjoint(wordsetdic[i][1]):
+            potentialsolve.append(wordsetdic[i])
+            solve(wordsetdic, totalset.union(wordsetdic[i][1]), i, potentialsolve, solved)
+            del potentialsolve[-1]
+
+totalset = set()
+potentialsolve = []
+solved = []
+solve(wordsetdic, totalset, 0, potentialsolve, solved)
+print(solved)
+
+with open("solved.txt", "w") as f:
+    for ans in solved:
+        f.write(f"{ans}\n")
+
+
 
